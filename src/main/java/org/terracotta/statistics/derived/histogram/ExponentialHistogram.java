@@ -20,9 +20,7 @@ import java.util.Arrays;
 
 import static java.lang.Integer.max;
 import static java.lang.Long.MIN_VALUE;
-import static java.lang.Long.highestOneBit;
 import static java.lang.Long.numberOfLeadingZeros;
-import static java.lang.Long.numberOfTrailingZeros;
 import static java.lang.Math.round;
 import static java.lang.System.arraycopy;
 import static java.util.Arrays.copyOf;
@@ -156,14 +154,14 @@ public class ExponentialHistogram {
   private static int[] lCanonical(int l, long count) {
     long num = count + l;
     long denom = l + 1;
-    int j = numberOfTrailingZeros(highestOneBit(num / denom));
+    int j = Long.SIZE - 1 - numberOfLeadingZeros(num / denom);
 
     long offset = (num - (denom << j));
     long prefixRep = offset & ((1L << j) - 1);
 
     int[] canonical = new int[j + 1];
 
-    for (int i = 0; i < j; i++) {
+    for (int i = 0; i < canonical.length; i++) {
       canonical[i] = l + (int) (((prefixRep >>> i) & 1));
     }
 
@@ -206,7 +204,7 @@ public class ExponentialHistogram {
     total += 1L;
     for (int logSize = 0; ; logSize++) {
       ensureCapacity(logSize);
-      
+
       int insertIndex = insert[logSize];
       long previous = boxes[insertIndex];
       boxes[insertIndex--] = time;

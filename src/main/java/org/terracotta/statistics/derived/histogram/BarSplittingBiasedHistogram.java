@@ -215,12 +215,12 @@ public class BarSplittingBiasedHistogram implements Histogram {
 
   @Override
   public double getMinimum() {
-    return bars.get(0).minimum();
+    return bars.getFirst().minimum();
   }
 
   @Override
   public double getMaximum() {
-    return nextDown(bars.get(bars.size() - 1).maximum());
+    return nextDown(bars.getLast().maximum());
   }
 
   @Override
@@ -308,20 +308,23 @@ public class BarSplittingBiasedHistogram implements Histogram {
     int lowestAggregateIndex = -1;
     double lowestAggregate = Double.POSITIVE_INFINITY;
 
-    for (int index = 0; index < bars.size() - 1; index++) {
-      Bar current = bars.get(index);
-      Bar next = bars.get(index + 1);
-      double aggregate = (((double) current.count()) / maxSizeTable[index]) + (((double) next.count()) / maxSizeTable[index + 1]);
+    double currentLoad = (((double) bars.getFirst().count()) / maxSizeTable[0]);
+    for (int index = 1; index < bars.size() - 1; index++) {
+      Bar next = bars.get(index);
+      double nextLoad = (((double) next.count()) / maxSizeTable[index]);
+      double aggregate = currentLoad + nextLoad;
       if (aggregate < lowestAggregate) {
         lowestAggregate = aggregate;
-        lowestAggregateIndex = index;
+        lowestAggregateIndex = index - 1;
       }
+      currentLoad = nextLoad;
     }
-    
-    if (bars.get(lowestAggregateIndex).count() + bars.get(lowestAggregateIndex + 1).count() < maxBarSize(lowestAggregateIndex)) {
-      Bar upper = bars.remove(lowestAggregateIndex + 1);
-      Bar lower = bars.get(lowestAggregateIndex);
+
+    Bar lower = bars.get(lowestAggregateIndex);
+    Bar upper = bars.get(lowestAggregateIndex + 1);
+    if (lower.count() + upper.count() < maxBarSize(lowestAggregateIndex)) {
       long before = lower.count() + upper.count();
+      bars.remove(lowestAggregateIndex + 1);
       lower.merge(upper);
       size += lower.count() - before;
       return lowestAggregateIndex + 1;
@@ -329,7 +332,7 @@ public class BarSplittingBiasedHistogram implements Histogram {
       return -1;
     }
   }
-  
+
   private int getBarIndex(double value) {
     int low = 0;
     int high = bars.size() - 1;
@@ -485,7 +488,8 @@ public class BarSplittingBiasedHistogram implements Histogram {
      */
     Bar split(double targetRatio) {
       ExponentialHistogram split = eh.split(targetRatio);
-      double ratio = ((double) split.count()) / (eh.count() + split.count());
+      long size = split.count();
+      double ratio = ((double) size) / (eh.count() + size);
       double upperMinimum = maximum - ((maximum - minimum) * ratio);
       double upperMaximum = maximum;
       this.maximum = upperMinimum;

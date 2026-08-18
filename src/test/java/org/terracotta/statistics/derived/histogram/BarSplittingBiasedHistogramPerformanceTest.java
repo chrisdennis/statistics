@@ -22,14 +22,13 @@ import org.junit.Test;
 import java.util.Arrays;
 import java.util.Random;
 
-@Ignore
 public class BarSplittingBiasedHistogramPerformanceTest extends HistogramPerformanceTest {
 
   @Override
   protected Histogram selfTime(double bias, int bars) {
     BarSplittingBiasedHistogram bsbh = new BarSplittingBiasedHistogram(0.75, 20, 1000000);
     long last = 3000L;
-    for (int i = 0; i < 2000000; i++) {
+    for (int i = 0; i < 20000000; i++) {
       long start = System.nanoTime();
       bsbh.event(last, i);
       last = System.nanoTime() - start;
@@ -41,7 +40,7 @@ public class BarSplittingBiasedHistogramPerformanceTest extends HistogramPerform
   public void testData() {
     BarSplittingBiasedHistogram bsbh = new BarSplittingBiasedHistogram(0.75, 20, 1000000);
     Random rndm = new Random();
-    long[] data = new long[2000000];
+    long[] data = new long[20000000];
     for (int i = 0; i < data.length; i++) {
       data[i] = (long) (Math.abs(rndm.nextGaussian()) * 3000L);
     }

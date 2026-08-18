@@ -28,11 +28,11 @@ public abstract class HistogramPerformanceTest {
   @Test
   public void testNanoTime() throws IOException {
     long total = 0L;
-    for (int i = 0; i < 2000000; i++) {
+    for (int i = 0; i < 20000000; i++) {
       long start = System.nanoTime();
       total += System.nanoTime() - start;
     }
-    System.out.println("System.nanoTime() mean time (ns): " + (((double) total) / 2000000));
+    System.out.println("System.nanoTime() mean time (ns): " + (((double) total) / 20000000));
   }
 
   @Test
